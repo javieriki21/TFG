@@ -1,0 +1,10 @@
+{
+    "python.pythonPath": "C:\\Users\\javie\\anaconda3\\python.exe",
+    "python.terminal.activateEnvironment": true,
+    "terminal.integrated.profiles.windows": {
+        "Custom Init": {
+          "path": "C:\\Windows\\System32\\cmd.exe"
+        }
+      },
+      "terminal.integrated.defaultProfile.windows": "Custom Init"
+}
