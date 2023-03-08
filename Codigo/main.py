@@ -2,9 +2,18 @@ import dash.exceptions
 from dash import Dash, dcc, html, no_update
 import plotly.express as px
 import pandas as pd
-import datetime
+from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
 import sys
+
+class Rol:
+    PROFESOR = 0
+    ESTUDIANTE = 1
+    ANALISTA = 2
+
+class ModeloUsuario:
+    rol = Rol.PROFESOR
+    edad = 0
 
 
 # ----------------------------------------------------------------------------------
@@ -25,15 +34,16 @@ PREGUNTA4 = "pregunta-cuatro"
 
 # ----------------------------------------------------------------------------------
 # ESTADOS
-INICIO = 1
-CUESTIONARIO = 2
-EJECCUCION = 3
-FIN = 4
+CUESTIONARIO = 1
+EJECCUCION = 2
+FIN = 3
 
 
 # ----------------------------------------------------------------------------------
 # Inicialización
-estadoAplicacion = INICIO
+estadoAplicacion = CUESTIONARIO
+UsuarioAplicacion = ModeloUsuario()
+
 app = Dash(__name__)
 
 app.title = "Probando"
@@ -129,27 +139,54 @@ def dropdownRender3() -> html.Div:
 # ----------------------------------------------------------------------------------
 # Layout
 def cambiarLayout():
-    if estadoAplicacion == INICIO:
-        return html.Div(
-            className="app-div",
-            id = LAYOUT,
-            children=[
-                html.H1("INICIO"),
-                html.Hr(),
-                html.Button('Comenzar', id=BOTON_COMIENZO)
-            ]
-        )
-    elif estadoAplicacion == CUESTIONARIO:
+    if estadoAplicacion == CUESTIONARIO:
         return html.Div(
             className="app-div",
             id = LAYOUT,
             children=[
                 html.H1("CUESTIONARIO"),
                 html.Hr(),
+                html.H2("Rol"),
+                dcc.Dropdown(
+                    id=PREGUNTA1,
+                    placeholder="Enter your rol...",
+                    options=[
+                        {'label': "Profesor", 'value': Rol.PROFESOR},
+                        {'label': "Estudiante", 'value': Rol.ESTUDIANTE},
+                        {'label': "Analista", 'value': Rol.ANALISTA}
+                    ],
+                    value = None,
+                    multi=False,
+                ),
+                html.H2("Edad"),
+                dcc.Input(
+                    id=PREGUNTA2,
+                    placeholder = "Enter your age...",
+                    type='number',
+                    min=1,
+                    max=100,
+                    step=1,
+                    value = None,
+                    size = 0,
+                ),
+                html.Hr(),
+                dcc.Dropdown(
+                    id=PREGUNTA3,
+                    options=["1", "2", "3"],
+                    value = None,
+                    multi=False,
+                ),
+                dcc.Dropdown(
+                    id=PREGUNTA4,
+                    options=["1", "2", "3"],
+                    value = None,
+                    multi=False,
+                ),
                 html.Button('Continuar', id=BOTON_COMIENZO),
             ]
         )
     elif estadoAplicacion == EJECCUCION:
+        print(UsuarioAplicacion.rol)
         return html.Div(
             className="app-div",
             id = LAYOUT,
@@ -181,81 +218,31 @@ def cambiarLayout():
         return html.Div("ERROR")
 
 
-app.layout = html.Div(
-    className="app-div",
-    id = LAYOUT,
-    children=[
-        html.H1("INICIO"),
-        html.Hr(),
-        html.Button('Comenzar', id=BOTON_COMIENZO)
-    ]
-)
+app.layout = cambiarLayout
 
 @app.callback(
     Output(LAYOUT, "children"),
     Input(BOTON_COMIENZO, 'n_clicks'),
+    [State(PREGUNTA1, 'value'),
+    State(PREGUNTA2, 'value'),
+    State(PREGUNTA3, 'value'),
+    State(PREGUNTA4, 'value'),],
     prevent_initial_call = True
 )
-def comenzado(nclicks):
+def comenzado(nclicks, p1, p2, p3, p4):
     global estadoAplicacion
-    if estadoAplicacion == INICIO:
-        estadoAplicacion = CUESTIONARIO
-        return [
-            html.H1("CUESTIONARIO"),
-            html.Hr(),
-            html.Div(
-                id = CONTENEDOR_CUESTIONARIO,
-                children=[
-                    dcc.Dropdown(
-                        id = PREGUNTA1,
-                        options=["1", "2","3"],
-                        multi=False,
-                    ),
-                    dcc.Dropdown(
-                        id=PREGUNTA2,
-                        options=["1", "2", "3"],
-                        multi=False,
-                    ),
-                    dcc.Dropdown(
-                        id=PREGUNTA3,
-                        options=["1", "2", "3"],
-                        multi=False,
-                    ),
-                    dcc.Dropdown(
-                        id=PREGUNTA4,
-                        options=["1", "2", "3"],
-                        multi=False,
-                    )
-                ],
-            ),
-            html.Button('Continuar', id=BOTON_COMIENZO),
-        ]
-    elif estadoAplicacion == CUESTIONARIO:
-        return [
-            html.H1("GRAFICAS"),
-            html.Hr(),
-            html.Div(
-                className="contenedor-dropdown",
-                children=[
-                    dropdownRender()
-                ]
-            ),
-            html.Div(
-                className="contenedor-dropdown",
-                children=[
-                    dropdownRender2()
-                ]
-            ),
-            html.Div(
-                className="contenedor-dropdown",
-                children=[
-                    dropdownRender3()
-                ]
-            ),
-            barchartRender()
-        ]
+    if p1 is None:
+        raise PreventUpdate
+    if p2 is None:
+        raise PreventUpdate
+    if p3 is None:
+        raise PreventUpdate
+    if p4 is None:
+        raise PreventUpdate
     else:
-        return []
+        UsuarioAplicacion.rol = p1
+        UsuarioAplicacion.edad = p2
+        estadoAplicacion = EJECCUCION
 
 # ----------------------------------------------------------------------------------
 # Main
