@@ -1,3 +1,4 @@
+import numpy as np
 class Role:
     PROFESOR = 0
     ESTUDIANTE = 1
@@ -8,3 +9,4 @@ class Usuario:
     name = "**User**"
     role = Role.PROFESOR
     gltInitResult = 5
+    UltimasSesiones = np.array([-1]*65).reshape(5,13)

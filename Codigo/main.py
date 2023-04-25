@@ -9,6 +9,8 @@ from dash.dependencies import Input, Output, State
 from usuario import Role
 from usuario import Usuario
 import time
+import os
+import pickle
 
 # ----------------------------------------------------------------------------------
 # IDS
@@ -40,6 +42,7 @@ RESPUESTA = "respuesta"
 BOTON_GOTOHOME = "boton-gotohome"
 BOTON_GOTOLOGIN = "boton-gotologin"
 BOTON_GOTOREGISTRO = "boton-gotoregistro"
+BOTON_CLOSE_SESSION = "botn-cerrar-sesion"
 
 LAYOUT = "layout-principal"
 
@@ -121,11 +124,47 @@ layoutHome = html.Div(
 layoutInicioSesion = html.Div(
     className="app-div",
     children=[
-        html.H1("Inicio de sesión"),
-        html.Hr(),
-        html.H2("Introduce usuario"),
+        dbc.Container([
+            dbc.Row([html.H1("LOGIN"), html.Hr()], style={'textAlign': 'center'}),
+            dbc.Row([
+                dbc.Col([
+                     html.H2("Username"),
+                     dcc.Input(
+                         id=REGUNAME,
+                         placeholder="Enter your username...",
+                         value=None,
+                         style={'width': '500px'}
+                     ),
+                     ], style={'font-size': '2em'}, width="auto"),
+                dbc.Col(html.Button('Continuar', id=BOTON_TERMINAR_LOGIN, style={'width': '200px'}), width="True",
+                        style={'textAlign': 'right'}),
+            ], style={'textAlign': 'center'})
+        ]),
     ],
-    style={'textAlign': 'center', 'margin': 'auto', 'padding': '50px'}
+    style={'textAlign': 'left', 'margin': 'auto', 'padding': '50px'}
+)
+
+layoutInicioSesionError = html.Div(
+    className="app-div",
+    children=[
+        dbc.Container([
+            dbc.Row([html.H1("LOGIN"), html.Hr()], style={'textAlign': 'center'}),
+            dbc.Row([
+                dbc.Col([
+                     html.H2("Username"),
+                     dcc.Input(
+                         id=REGUNAME,
+                         placeholder="No existe usuario con ese nombre",
+                         value=None,
+                         style={'width': '500px'}
+                     ),
+                     ], style={'font-size': '2em'}, width="auto"),
+                dbc.Col(html.Button('Continuar', id=BOTON_TERMINAR_LOGIN, style={'width': '200px'}), width="True",
+                        style={'textAlign': 'right'}),
+            ], style={'textAlign': 'center'})
+        ]),
+    ],
+    style={'textAlign': 'left', 'margin': 'auto', 'padding': '50px'}
 )
 
 layoutRegistro = html.Div(
@@ -162,6 +201,51 @@ layoutRegistro = html.Div(
                     dcc.Input(
                         id=REGUNAME,
                         placeholder = "Enter your username...",
+                        value = None,
+                        style={'width':'500px'}
+                    ),
+                ], style={'font-size': '2em'}, width="auto"),
+                dbc.Col(html.Button('Continuar', id=BOTON_CONTINUAR_REGISTRO, style={'width': '200px'}),width="True", style={'textAlign': 'right'}),
+            ], style={'textAlign': 'center'})
+        ]),
+    ],
+    style={'textAlign': 'left', 'margin': 'auto', 'padding': '50px'}
+)
+
+layoutRegistroError = html.Div(
+    className="app-div",
+    children=[
+        dbc.Container([
+            dbc.Row([html.H1("REGISTRO"), html.Hr()], style={'textAlign': 'center'}),
+            dbc.Row([
+                dbc.Col([html.H2("Role"),
+                    dcc.Dropdown(
+                        id=REGROL,
+                        placeholder="Enter your role...",
+                        options=[
+                            {'label': "Profesor", 'value': Role.PROFESOR},
+                            {'label': "Estudiante", 'value': Role.ESTUDIANTE},
+                            {'label': "Director", 'value': Role.DIRECTOR}
+                        ],
+                        value = None,
+                        multi=False,
+                        style={'width':'500px'}
+                    ),
+                    html.H2("Age"),
+                    dcc.Input(
+                        id=REGEDAD,
+                        placeholder = "Enter your age...",
+                        type='number',
+                        min=1,
+                        max=100,
+                        step=1,
+                        value = None,
+                        style={'width':'500px'}
+                    ),
+                    html.H2("Username"),
+                    dcc.Input(
+                        id=REGUNAME,
+                        placeholder = "Ya existe un usuario con este nombre",
                         value = None,
                         style={'width':'500px'}
                     ),
@@ -417,6 +501,7 @@ app.layout = html.Div([
                     dbc.Col(html.I(id=BOTON_GOTOHOME, className='bi bi-house-door-fill'), style={'font-size': '2em'}, width="auto"),
                     dbc.Col(html.H1('ShadowSpect'), width="auto"),
                     dbc.Col(width=True),
+                    dbc.Col(html.I(id=BOTON_CLOSE_SESSION, className='bi bi-power'), style={'font-size': '2em'}, width="auto")
                 ], justify=True)
         ])
     ],style={"color": coloresFondo['textoBarraArriba'], 'backgroundColor': coloresFondo['backgroundBarraArriba']}),
@@ -455,6 +540,18 @@ layoutEjeccucion = html.Div(
     ]
 )
 
+def guardarInfUsuario():
+    global UsuarioAplicacion
+    path = "usuarios/" + UsuarioAplicacion.name + ".txt"
+    if (os.path.isfile(path)):
+        file = open(path, "rb")
+        UsuarioAplicacion = pickle.load(file)
+        print(UsuarioAplicacion.UltimasSesiones)
+    else:
+        file = open(path, "w+b")
+        print(UsuarioAplicacion.UltimasSesiones)
+        pickle.dump(UsuarioAplicacion, file)
+    return
 
 # Volver al inicio
 @app.callback(
@@ -462,6 +559,9 @@ layoutEjeccucion = html.Div(
     Input(BOTON_GOTOHOME, 'n_clicks')
 )
 def changeLayout(b1):
+    global estadoAplicacion
+    if estadoAplicacion == EJECCUCION:
+        guardarInfUsuario()
     estadoAplicacion = HOME
     return layoutHome
 
@@ -471,8 +571,49 @@ def changeLayout(b1):
     Input(BOTON_GOTOLOGIN, 'n_clicks')
 )
 def gotoLogin(nclicks):
+    global estadoAplicacion
     estadoAplicacion = INICIO_SESION
     return layoutInicioSesion
+
+# Terminar Login
+@app.callback(
+    Output(LAYOUT, "children"),
+    Input(BOTON_TERMINAR_LOGIN, 'n_clicks'),
+    State(REGUNAME, 'value'),
+)
+def AcabarLogin(nclicks, r):
+    if r is None:
+        raise PreventUpdate
+    path = "usuarios/" + str(r) + ".txt"
+    if (os.path.isfile(path)):
+        global UsuarioAplicacion
+        file = open(path, "rb")
+        UsuarioAplicacion = pickle.load(file)
+        global estadoAplicacion
+        estadoAplicacion = EJECCUCION
+        return layoutEjeccucion
+    else:
+        return layoutInicioSesionError
+
+
+# Cerrar sesión
+@app.callback(
+    Output(LAYOUT, "children"),
+    Input(BOTON_CLOSE_SESSION, 'n_clicks')
+)
+def cerrarSesion(nclicks):
+    global estadoAplicacion
+    if estadoAplicacion == EJECCUCION:
+        guardarInfUsuario()
+        estadoAplicacion = HOME
+        return layoutHome
+    else:
+        raise PreventUpdate
+
+
+#Contar tiempos test
+TinicioPregunta = 0
+TFinPregunta = 0
 
 # Comenzar registro
 @app.callback(
@@ -480,6 +621,7 @@ def gotoLogin(nclicks):
     Input(BOTON_GOTOREGISTRO, 'n_clicks')
 )
 def gotoRegister(nclicks):
+    global estadoAplicacion
     estadoAplicacion = REGISTRO
     return layoutRegistro
 
@@ -504,6 +646,9 @@ def continuarRegistro(nclicks, c1, c2, c3):
         raise PreventUpdate
     if c3 is None:
         raise PreventUpdate
+    path = "usuarios/" + str(c3) + ".txt"
+    if (os.path.isfile(path)):
+        return layoutRegistroError
     else:
         UsuarioAplicacion.role = c1
         UsuarioAplicacion.age = c2
@@ -577,6 +722,8 @@ def AcabarRegistro(nclicks, r):
         tipoGraficas = "Cajas"
     else:
         tipoGraficas = "Funnel"
+    global estadoAplicacion
+    estadoAplicacion = EJECCUCION
     return layoutEjeccucion
 
 # @app.callback(
