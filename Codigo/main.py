@@ -73,12 +73,16 @@ FIN = 4
 # ----------------------------------------------------------------------------------
 # Inicialización
 estadoAplicacion = HOME
+seccionActual = 1
 UsuarioAplicacion = Usuario()
 tipoGraficas = "Barras"
 
+# Contar tiempo seccion
+TInicioSeccion = 0.0
+TFinSeccion = 0.0
 # Contar tiempo sesión
-TinicioSesion = 0
-TFinSesion = 0
+TinicioSesion = 0.0
+TFinSesion = 0.0
 # Número de clicks
 nclicks_inicio = 0
 nclicks_fin = 0
@@ -86,11 +90,11 @@ nclicks_fin = 0
 nclicks_cambios_inicio = 0
 nclicks_cambios_fin = 0
 # Tiempo inactividad máximo
-tiempoInMax = 0
-TInicioInactividad = 0
-TFinInactividad = 0
+tiempoInMax = 0.0
+TInicioInactividad = 0.0
+TFinInactividad = 0.0
 # Tiempo en cada sección
-tSecciones = [0]*7
+tSecciones = [0.0]*7
 
 #Preguntas
 ContadorPreguntas = 1
@@ -143,10 +147,10 @@ layoutHome = html.Div(
     className="app-div",
     children=[
         html.H1("BIENVENIDO"),
-        html.Button('LOGIN', id=BOTON_GOTOLOGIN),
-        html.Button('REGISTRO', id=BOTON_GOTOREGISTRO),
+        dbc.Button('LOGIN', id=BOTON_GOTOLOGIN),
+        dbc.Button('REGISTRO', id=BOTON_GOTOREGISTRO),
     ],
-    style={'textAlign': 'center', 'margin': 'auto', 'padding': '50px'}
+    style={'textAlign': 'center', 'margin': 'auto', 'padding': '60px'}
 )
 layoutInicioSesion = html.Div(
     className="app-div",
@@ -163,7 +167,7 @@ layoutInicioSesion = html.Div(
                          style={'width': '500px'}
                      ),
                      ], style={'font-size': '2em'}, width="auto"),
-                dbc.Col(html.Button('Continuar', id=BOTON_TERMINAR_LOGIN, style={'width': '200px'}), width="True",
+                dbc.Col(dbc.Button('Continuar', id=BOTON_TERMINAR_LOGIN, style={'width': '200px'}), width="True",
                         style={'textAlign': 'right'}),
             ], style={'textAlign': 'center'})
         ], fluid=True),
@@ -186,7 +190,7 @@ layoutInicioSesionError = html.Div(
                          style={'width': '500px'}
                      ),
                      ], style={'font-size': '2em'}, width="auto"),
-                dbc.Col(html.Button('Continuar', id=BOTON_TERMINAR_LOGIN, style={'width': '200px'}), width="True",
+                dbc.Col(dbc.Button('Continuar', id=BOTON_TERMINAR_LOGIN, style={'width': '200px'}), width="True",
                         style={'textAlign': 'right'}),
             ], style={'textAlign': 'center'})
         ], fluid=True),
@@ -232,7 +236,7 @@ layoutRegistro = html.Div(
                         style={'width':'500px'}
                     ),
                 ], style={'font-size': '2em'}, width="auto"),
-                dbc.Col(html.Button('Continuar', id=BOTON_CONTINUAR_REGISTRO, style={'width': '200px'}),width="True", style={'textAlign': 'right'}),
+                dbc.Col(dbc.Button('Continuar', id=BOTON_CONTINUAR_REGISTRO, style={'width': '200px'}),width="True", style={'textAlign': 'right'}),
             ], style={'textAlign': 'center'})
         ], fluid=True),
     ],
@@ -277,7 +281,7 @@ layoutRegistroError = html.Div(
                         style={'width':'500px'}
                     ),
                 ], style={'font-size': '2em'}, width="auto"),
-                dbc.Col(html.Button('Continuar', id=BOTON_CONTINUAR_REGISTRO, style={'width': '200px'}),width="True", style={'textAlign': 'right'}),
+                dbc.Col(dbc.Button('Continuar', id=BOTON_CONTINUAR_REGISTRO, style={'width': '200px'}),width="True", style={'textAlign': 'right'}),
             ], style={'textAlign': 'center'})
         ], fluid=True),
     ],
@@ -422,7 +426,7 @@ pregunta5 = html.Div(
             multi=False,
             style={'textAlign': 'left'}
         ),
-        dbc.Col(html.Button('Continuar', id=BOTON_TERMINAR_REGISTRO, style={'width': '200px', 'color': coloresFondo['textoBarraArriba'], 'backgroundColor': coloresFondo['backgroundBarraArriba']}),width="True", style={'textAlign': 'right'})
+        dbc.Col(dbc.Button('Continuar', id=BOTON_TERMINAR_REGISTRO, style={'width': '200px', 'color': coloresFondo['textoBarraArriba'], 'backgroundColor': coloresFondo['backgroundBarraArriba']}),width="True", style={'textAlign': 'right'})
     ]
 )
 layoutTest = html.Div(
@@ -441,7 +445,13 @@ layoutTest = html.Div(
     style={'textAlign': 'center', 'margin': 'auto', 'padding': '50px'}
 )
 
-
+layoutSeccion1 = html.Div()
+layoutSeccion2 = html.Div()
+layoutSeccion3 = html.Div()
+layoutSeccion4 = html.Div()
+layoutSeccion5 = html.Div()
+layoutSeccion6 = html.Div()
+layoutSeccion7 = html.Div()
 
 # ----------------------------------------------------------------------------------
 # Barchart
@@ -570,19 +580,19 @@ layoutEjeccucion = html.Div(
                             dbc.Stack([
                                 html.H1(),
                                 html.H1(),
-                                html.Button('Seccion 1', id=BOTON_SECCION_1),
-                                html.Button('Seccion 2', id=BOTON_SECCION_2),
-                                html.Button('Seccion 3', id=BOTON_SECCION_3),
-                                html.Button('Seccion 4', id=BOTON_SECCION_4),
-                                html.Button('Seccion 5', id=BOTON_SECCION_5),
-                                html.Button('Seccion 6', id=BOTON_SECCION_6),
-                                html.Button('Seccion 7', id=BOTON_SECCION_7),
+                                dbc.Button('Seccion 1', id=BOTON_SECCION_1),
+                                dbc.Button('Seccion 2', id=BOTON_SECCION_2),
+                                dbc.Button('Seccion 3', id=BOTON_SECCION_3),
+                                dbc.Button('Seccion 4', id=BOTON_SECCION_4),
+                                dbc.Button('Seccion 5', id=BOTON_SECCION_5),
+                                dbc.Button('Seccion 6', id=BOTON_SECCION_6),
+                                dbc.Button('Seccion 7', id=BOTON_SECCION_7),
                             ], gap='3'),
                         ]
                         ),
                         dbc.Row([],
                             className="h-75")
-                    ], fluid=True, style={'height':'100vh'})],
+                    ], fluid=True, style={"color": coloresFondo['textoBarraArriba'], 'backgroundColor': coloresFondo['backgroundBarraArriba'],'height':'100vh'})],
                 ),], style={"color": coloresFondo['textoBarraArriba'], 'backgroundColor': coloresFondo['backgroundBarraArriba'],
                                    'textAlign': 'center'}, width={"size":2,"offset":0 }),
                 dbc.Col([
@@ -608,14 +618,15 @@ layoutEjeccucion = html.Div(
                         barchartRender()
                     ])
                 ], width = True)
-            ]),
+            ], justify= "start"),
         ], fluid=True)
     ]
 )
 
 
 def acabarRegistro():
-    UltimasSesiones = np.array([-1]*55).reshape(5,11)
+    UltimasSesiones = np.array([-1.0, -1.0, -1, -1, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0])
+    UltimasSesiones = np.vstack([UltimasSesiones, UltimasSesiones, UltimasSesiones, UltimasSesiones, UltimasSesiones])
 
     path = "usuarios/" + UsuarioAplicacion.name + ".txt"
     file = open(path, "wb")
@@ -668,7 +679,12 @@ def iniciarSesion(nombre):
         UsuarioAplicacion = pickle.load(file)
         UltimasSesiones = pickle.load(file)
         print(UsuarioAplicacion.name)
-        print(UltimasSesiones)
+        print(np.around(UltimasSesiones, decimals=3))
+
+        global tSecciones, TInicioSeccion, seccionActual
+        seccionActual = 1
+        TInicioSeccion = time.time()
+        tSecciones = [0.0]*7
 
         sesionesValidas = 5 - np.count_nonzero(UltimasSesiones[:, 0] == -1)
         if sesionesValidas == 0:
@@ -681,7 +697,6 @@ def iniciarSesion(nombre):
                 tipoGraficas = "Cajas"
             else:
                 tipoGraficas = "Funnel"
-            print("NO HAY")
             return True
 
         else:
@@ -849,9 +864,8 @@ def avanzarPregunta(nclicks, r):
     Output(LAYOUT, "children"),
     Input(BOTON_TERMINAR_REGISTRO, 'n_clicks'),
     State(RESPUESTA, 'value'),
-    State(GLOBAL, 'nclicks')
 )
-def EndRegistro(nclicks, r, n2):
+def EndRegistro(nclicks, r):
     if nclicks is None:
         raise PreventUpdate
     global UsuarioAplicacion
@@ -878,78 +892,58 @@ def EndRegistro(nclicks, r, n2):
     acabarRegistro()
     global estadoAplicacion
     estadoAplicacion = EJECCUCION
-    global nclicks_inicio
-    nclicks_inicio = n2
 
     global TinicioSesion
     TinicioSesion = time.time()
     return layoutEjeccucion
 
-# @app.callback(
-#     Output(TEST, "children"),
-#     Input(ANTERIOR_PREGUNTA, 'n_clicks'),
-#     State(RESPUESTA, 'value'),
-#     prevent_initial_call = True
-# )
-# def retrocederPregunta(nclicks, r):
-#     if nclicks is None:
-#         raise PreventUpdate
-#     global ContadorPreguntas
-#     print(r)
-#     ContadorPreguntas -= 1
-#     if ContadorPreguntas == 1:
-#         if r is not None:
-#             global Respuesta2
-#             print(Respuesta2)
-#             Respuesta2 = r
-#             print(Respuesta2)
-#         return pregunta1
-#     elif ContadorPreguntas == 2:
-#         if r is not None:
-#             global Respuesta3
-#             Respuesta3 = r
-#         return pregunta2
-#     elif ContadorPreguntas == 3:
-#         if r is not None:
-#             global Respuesta4
-#             Respuesta4 = r
-#         return pregunta3
-#     elif ContadorPreguntas == 4:
-#         if r is not None:
-#             global Respuesta5
-#             Respuesta5 = r
-#         return pregunta4
+# Cambiar sección
+@app.callback(
+    Output(GRAFICAS, "children"),
+    Input(BOTON_SECCION_1, 'n_clicks')
+)
+def irASeccion1(nclicks):
+    global seccionActual
+    if seccionActual != 1:
+        global TInicioSeccion, TFinSeccion, tSecciones
+        TFinSeccion = time.time()
+        tSecciones[seccionActual - 1] = tSecciones[seccionActual - 1] + (TFinSeccion - TInicioSeccion)
+        TInicioSeccion = time.time()
+        seccionActual = 1
+        return layoutSeccion1
 
-# @app.callback(
-#     Output(LAYOUT, "children"),
-#     Input(BOTON_REGISTRO, 'n_clicks'),
-#     [State(PREGUNTA1, 'value'),
-#     State(PREGUNTA2, 'value'),
-#     State(PREGUNTA3, 'value'),
-#     State(PREGUNTA4, 'value'),],
-#     prevent_initial_call = True
-# )
-# def comenzado(nclicks, p1, p2, p3, p4):
-#     global estadoAplicacion
-#     if p1 is None:
-#         raise PreventUpdate
-#     if p2 is None:
-#         raise PreventUpdate
-#     if p3 is None:
-#         raise PreventUpdate
-#     if p4 is None:
-#         raise PreventUpdate
-#     else:
-#         UsuarioAplicacion.role = p1
-#         UsuarioAplicacion.edad = p2
-#         estadoAplicacion = EJECCUCION
+@app.callback(
+    Output(GRAFICAS, "children"),
+    Input(BOTON_SECCION_2, 'n_clicks')
+)
+def irASeccion2(nclicks):
+    global seccionActual
+    if seccionActual != 2:
+        global TInicioSeccion, TFinSeccion, tSecciones
+        TFinSeccion = time.time()
+        tSecciones[seccionActual - 1] = tSecciones[seccionActual - 1] + (TFinSeccion - TInicioSeccion)
+        TInicioSeccion = time.time()
+        seccionActual = 2
+        return layoutSeccion2
+
+@app.callback(
+    Output(GRAFICAS, "children"),
+    Input(BOTON_SECCION_3, 'n_clicks')
+)
+def irASeccion3(nclicks):
+    global seccionActual
+    if seccionActual != 3:
+        global TInicioSeccion, TFinSeccion, tSecciones
+        TFinSeccion = time.time()
+        tSecciones[seccionActual - 1] = tSecciones[seccionActual - 1] + (TFinSeccion - TInicioSeccion)
+        TInicioSeccion = time.time()
+        seccionActual = 3
+        return layoutSeccion3
 
 # ----------------------------------------------------------------------------------
 # Main
 def main() -> None:
     app.run_server(debug=True)
-    while True:
-        estadoAplicacion = EJECCUCION
     
 if __name__ == "__main__":
     main()
