@@ -1,4 +1,5 @@
 import dash.exceptions
+import numpy as np
 from dash import Dash, dcc, html, no_update, ctx
 import dash_bootstrap_components as dbc
 import plotly.express as px
@@ -45,10 +46,20 @@ BOTON_GOTOREGISTRO = "boton-gotoregistro"
 BOTON_CLOSE_SESSION = "botn-cerrar-sesion"
 
 LAYOUT = "layout-principal"
+GLOBAL = "layout-global"
 
 CONTENEDOR_01 = "contenedor-01"
 CONTENEDOR_02 = "contenedor-02"
 CONTENEDOR_03 = "contenedor-03"
+BARRA_LATERAL = "barra-lateral"
+BOTON_SECCION_1 = "boton-seccion-1"
+BOTON_SECCION_2 = "boton-seccion-2"
+BOTON_SECCION_3 = "boton-seccion-3"
+BOTON_SECCION_4 = "boton-seccion-4"
+BOTON_SECCION_5 = "boton-seccion-5"
+BOTON_SECCION_6 = "boton-seccion-6"
+BOTON_SECCION_7 = "boton-seccion-7"
+GRAFICAS = "graficas"
 
 
 # ----------------------------------------------------------------------------------
@@ -64,6 +75,22 @@ FIN = 4
 estadoAplicacion = HOME
 UsuarioAplicacion = Usuario()
 tipoGraficas = "Barras"
+
+# Contar tiempo sesión
+TinicioSesion = 0
+TFinSesion = 0
+# Número de clicks
+nclicks_inicio = 0
+nclicks_fin = 0
+# Número de clicks cambios sección
+nclicks_cambios_inicio = 0
+nclicks_cambios_fin = 0
+# Tiempo inactividad máximo
+tiempoInMax = 0
+TInicioInactividad = 0
+TFinInactividad = 0
+# Tiempo en cada sección
+tSecciones = [0]*7
 
 #Preguntas
 ContadorPreguntas = 1
@@ -139,7 +166,7 @@ layoutInicioSesion = html.Div(
                 dbc.Col(html.Button('Continuar', id=BOTON_TERMINAR_LOGIN, style={'width': '200px'}), width="True",
                         style={'textAlign': 'right'}),
             ], style={'textAlign': 'center'})
-        ]),
+        ], fluid=True),
     ],
     style={'textAlign': 'left', 'margin': 'auto', 'padding': '50px'}
 )
@@ -162,7 +189,7 @@ layoutInicioSesionError = html.Div(
                 dbc.Col(html.Button('Continuar', id=BOTON_TERMINAR_LOGIN, style={'width': '200px'}), width="True",
                         style={'textAlign': 'right'}),
             ], style={'textAlign': 'center'})
-        ]),
+        ], fluid=True),
     ],
     style={'textAlign': 'left', 'margin': 'auto', 'padding': '50px'}
 )
@@ -207,7 +234,7 @@ layoutRegistro = html.Div(
                 ], style={'font-size': '2em'}, width="auto"),
                 dbc.Col(html.Button('Continuar', id=BOTON_CONTINUAR_REGISTRO, style={'width': '200px'}),width="True", style={'textAlign': 'right'}),
             ], style={'textAlign': 'center'})
-        ]),
+        ], fluid=True),
     ],
     style={'textAlign': 'left', 'margin': 'auto', 'padding': '50px'}
 )
@@ -252,7 +279,7 @@ layoutRegistroError = html.Div(
                 ], style={'font-size': '2em'}, width="auto"),
                 dbc.Col(html.Button('Continuar', id=BOTON_CONTINUAR_REGISTRO, style={'width': '200px'}),width="True", style={'textAlign': 'right'}),
             ], style={'textAlign': 'center'})
-        ]),
+        ], fluid=True),
     ],
     style={'textAlign': 'left', 'margin': 'auto', 'padding': '50px'}
 )
@@ -267,7 +294,7 @@ pregunta1 = html.Div(
                 dbc.Col(width=True),
                 dbc.Col(html.I(id=SIGUIENTE_PREGUNTA, className='bi bi-arrow-right'), style={'font-size': '2em', 'color': coloresFondo['botonActivado']}, width="auto"),
             ], style={'width': True})
-        ]),
+        ], fluid=True),
         html.Img(src="assets/test1.png"),
         dcc.Dropdown(
             id=RESPUESTA,
@@ -295,7 +322,7 @@ pregunta2 = html.Div(
                 dbc.Col(width=True),
                 dbc.Col(html.I(id=SIGUIENTE_PREGUNTA, className='bi bi-arrow-right'), style={'font-size': '2em', 'color': coloresFondo['botonActivado']}, width="auto"),
             ], style={'width': True})
-        ]),
+        ], fluid=True),
         html.Img(src="assets/test2.png"),
         dcc.Dropdown(
             id=RESPUESTA,
@@ -323,7 +350,7 @@ pregunta3 = html.Div(
                 dbc.Col(width=True),
                 dbc.Col(html.I(id=SIGUIENTE_PREGUNTA, className='bi bi-arrow-right'), style={'font-size': '2em', 'color': coloresFondo['botonActivado']}, width="auto"),
             ], style={'width': True})
-        ]),
+        ], fluid=True),
         html.Img(src="assets/test3.png"),
         dcc.Dropdown(
             id=RESPUESTA,
@@ -351,7 +378,7 @@ pregunta4 = html.Div(
                 dbc.Col(width=True),
                 dbc.Col(html.I(id=SIGUIENTE_PREGUNTA, className='bi bi-arrow-right'), style={'font-size': '2em', 'color': coloresFondo['botonActivado']}, width="auto"),
             ], style={'width': True})
-        ]),
+        ], fluid=True),
         html.Img(src="assets/test4.png"),
         dcc.Dropdown(
             id=RESPUESTA,
@@ -379,7 +406,7 @@ pregunta5 = html.Div(
                 dbc.Col(width=True),
                 dbc.Col(html.I(className='bi bi-arrow-right'), style={'font-size': '2em', 'color': coloresFondo['botonDesactivado']}, width="auto"),
             ], style={'width': True})
-        ]),
+        ], fluid=True),
         html.Img(src="assets/test5.png"),
         dcc.Dropdown(
             id=RESPUESTA,
@@ -494,23 +521,37 @@ def dropdownRender3() -> html.Div:
 
 # ----------------------------------------------------------------------------------
 # Layout global
-app.layout = html.Div([
-    html.Div([
-        dbc.Container([
-                dbc.Row([
-                    dbc.Col(html.I(id=BOTON_GOTOHOME, className='bi bi-house-door-fill'), style={'font-size': '2em'}, width="auto"),
-                    dbc.Col(html.H1('ShadowSpect'), width="auto"),
-                    dbc.Col(width=True),
-                    dbc.Col(html.I(id=BOTON_CLOSE_SESSION, className='bi bi-power'), style={'font-size': '2em'}, width="auto")
-                ], justify=True)
-        ])
-    ],style={"color": coloresFondo['textoBarraArriba'], 'backgroundColor': coloresFondo['backgroundBarraArriba']}),
-    html.Div(
-        id = LAYOUT,
-        children=[
-            layoutHome
-        ],
-    )
+app.layout = html.Div(
+    id = GLOBAL,
+    children = [
+    dbc.Container([
+        dbc.Row([
+            dbc.Col([
+                html.Div([
+                    dbc.Container([
+                            dbc.Row([
+                                dbc.Col(html.I(id=BOTON_GOTOHOME, className='bi bi-house-door-fill'), style={'font-size': '2em'}, width="auto"),
+                                dbc.Col(html.H1('ShadowSpect Dashboard'), width="auto"),
+                                dbc.Col(width=True),
+                                dbc.Col(html.I(id=BOTON_CLOSE_SESSION, className='bi bi-power'), style={'font-size': '2em'}, width="auto")
+                            ], justify=True)
+                    ], fluid=True)
+                    ]),
+            ], width=True,style={"color": coloresFondo['textoBarraArriba'], 'backgroundColor': coloresFondo['backgroundBarraArriba']})
+        ]),
+        dbc.Row([
+            dbc.Col([
+                html.Div(
+                    id=LAYOUT,
+                    children=[
+                        layoutHome
+                    ],
+                )
+            ], width=True)
+        ], justify="start"),
+    ], fluid=True)
+
+
 ],
 style={"color": coloresFondo['texto'], 'backgroundColor': coloresFondo['background'],'textAlign': 'center', 'margin': 'auto'})
 
@@ -520,45 +561,156 @@ layoutEjeccucion = html.Div(
     className="app-div",
     id = LAYOUT,
     children=[
-        html.H1("GRAFICAS"),
-        html.Hr(),
-        html.Div(
-            id=CONTENEDOR_01,
-            className="contenedor-dropdown",
-            children=[
-                dropdownRender()
-            ]
-        ),
-        html.Div(
-            id=CONTENEDOR_03,
-            className="contenedor-dropdown",
-            children=[
-                dropdownRender3()
-            ]
-        ),
-        barchartRender()
+        dbc.Container([
+            dbc.Row([
+                dbc.Col([html.Div(
+                    id = BARRA_LATERAL,
+                    children=[dbc.Container([
+                        dbc.Row([
+                            dbc.Stack([
+                                html.H1(),
+                                html.H1(),
+                                html.Button('Seccion 1', id=BOTON_SECCION_1),
+                                html.Button('Seccion 2', id=BOTON_SECCION_2),
+                                html.Button('Seccion 3', id=BOTON_SECCION_3),
+                                html.Button('Seccion 4', id=BOTON_SECCION_4),
+                                html.Button('Seccion 5', id=BOTON_SECCION_5),
+                                html.Button('Seccion 6', id=BOTON_SECCION_6),
+                                html.Button('Seccion 7', id=BOTON_SECCION_7),
+                            ], gap='3'),
+                        ]
+                        ),
+                        dbc.Row([],
+                            className="h-75")
+                    ], fluid=True, style={'height':'100vh'})],
+                ),], style={"color": coloresFondo['textoBarraArriba'], 'backgroundColor': coloresFondo['backgroundBarraArriba'],
+                                   'textAlign': 'center'}, width={"size":2,"offset":0 }),
+                dbc.Col([
+                    html.Div(
+                        id = GRAFICAS,
+                        children =[
+                        html.H1("GRAFICAS"),
+                        html.Hr(),
+                        html.Div(
+                            id=CONTENEDOR_01,
+                            className="contenedor-dropdown",
+                            children=[
+                                dropdownRender()
+                            ]
+                        ),
+                        html.Div(
+                            id=CONTENEDOR_03,
+                            className="contenedor-dropdown",
+                            children=[
+                                dropdownRender3()
+                            ]
+                        ),
+                        barchartRender()
+                    ])
+                ], width = True)
+            ]),
+        ], fluid=True)
     ]
 )
 
-def guardarInfUsuario():
-    global UsuarioAplicacion
+
+def acabarRegistro():
+    UltimasSesiones = np.array([-1]*55).reshape(5,11)
+
     path = "usuarios/" + UsuarioAplicacion.name + ".txt"
+    file = open(path, "wb")
+    pickle.dump(UsuarioAplicacion, file)
+    pickle.dump(UltimasSesiones, file)
+    file.close()
+
+def guardarInfUsuario():
+    global TinicioSesion, TFinSesion, UsuarioAplicacion
+    TFinSesion = time.time()
+    tiempoTotal = TFinSesion - TinicioSesion
+
+    path = "usuarios/" + UsuarioAplicacion.name + ".txt"
+    file = open(path, "rb")
+    UsuarioAplicacion = pickle.load(file)
+    UltimasSesiones = pickle.load(file)
+    file.close()
+
+    if tiempoTotal < 5:
+        return
+
+    UltimasSesiones[1:5, :] = UltimasSesiones[0:4, :]
+    global tiempoInMax, nclicks_inicio, nclicks_fin, nclicks_cambios_inicio, nclicks_cambios_fin, tSecciones
+    nclicks = nclicks_fin - nclicks_inicio
+    nCambSecc = nclicks_cambios_fin - nclicks_cambios_inicio
+
+    # Guardamos el tiempo de la última sesión
+    UltimasSesiones[0, 0] = tiempoTotal
+    # Guardamos el tiempo de inactividad máximo
+    UltimasSesiones[0, 1] = tiempoInMax
+    # Guardamos el tiempo de inactividad máximo
+    UltimasSesiones[0, 2] = nclicks
+    # Guardamos el número de cambios de sección por minuto
+    UltimasSesiones[0, 3] = nCambSecc
+    # Guardamos el tiempo en cada sección
+    UltimasSesiones[0, 4:11] = tSecciones
+
+    path = "usuarios/" + UsuarioAplicacion.name + ".txt"
+    file = open(path, "wb")
+    pickle.dump(UsuarioAplicacion, file)
+    pickle.dump(UltimasSesiones, file)
+    file.close()
+
+
+def iniciarSesion(nombre):
+    path = "usuarios/" + nombre + ".txt"
     if (os.path.isfile(path)):
+        global UsuarioAplicacion
         file = open(path, "rb")
         UsuarioAplicacion = pickle.load(file)
-        print(UsuarioAplicacion.UltimasSesiones)
-    else:
-        file = open(path, "w+b")
-        print(UsuarioAplicacion.UltimasSesiones)
-        pickle.dump(UsuarioAplicacion, file)
-    return
+        UltimasSesiones = pickle.load(file)
+        print(UsuarioAplicacion.name)
+        print(UltimasSesiones)
 
+        sesionesValidas = 5 - np.count_nonzero(UltimasSesiones[:, 0] == -1)
+        if sesionesValidas == 0:
+            global tipoGraficas
+            if UsuarioAplicacion.gltInitResult < 5:
+                tipoGraficas = "Barras"
+            elif UsuarioAplicacion.gltInitResult < 7:
+                tipoGraficas = "Cajas"
+            elif UsuarioAplicacion.gltInitResult < 9:
+                tipoGraficas = "Cajas"
+            else:
+                tipoGraficas = "Funnel"
+            print("NO HAY")
+            return True
+
+        else:
+            infoEntrenamiento = np.asarray([0]*13)
+            infoEntrenamiento[0] = UsuarioAplicacion.age
+            infoEntrenamiento[1] = UsuarioAplicacion.gltInitResult
+            infoEntrenamiento[2:13] = np.mean(UltimasSesiones[0:sesionesValidas, :], axis=0)
+            return True
+
+    else:
+        return False
+#
+@app.callback(
+    Output(GLOBAL, "children"),
+    Input(GLOBAL, 'n_clicks')
+)
+def contarClicks(n):
+    global nclicks_fin, nclicks_inicio, estadoAplicacion
+    if estadoAplicacion == EJECCUCION:
+        nclicks_fin = n
+    else:
+        nclicks_inicio = n
+    raise PreventUpdate
 # Volver al inicio
 @app.callback(
     Output(LAYOUT, "children"),
     Input(BOTON_GOTOHOME, 'n_clicks')
 )
-def changeLayout(b1):
+def goHome(b1):
     global estadoAplicacion
     if estadoAplicacion == EJECCUCION:
         guardarInfUsuario()
@@ -584,13 +736,12 @@ def gotoLogin(nclicks):
 def AcabarLogin(nclicks, r):
     if r is None:
         raise PreventUpdate
-    path = "usuarios/" + str(r) + ".txt"
-    if (os.path.isfile(path)):
-        global UsuarioAplicacion
-        file = open(path, "rb")
-        UsuarioAplicacion = pickle.load(file)
+    if iniciarSesion(str(r)):
         global estadoAplicacion
         estadoAplicacion = EJECCUCION
+
+        global TinicioSesion
+        TinicioSesion = time.time()
         return layoutEjeccucion
     else:
         return layoutInicioSesionError
@@ -599,13 +750,14 @@ def AcabarLogin(nclicks, r):
 # Cerrar sesión
 @app.callback(
     Output(LAYOUT, "children"),
-    Input(BOTON_CLOSE_SESSION, 'n_clicks')
+    Input(BOTON_CLOSE_SESSION, 'n_clicks'),
 )
 def cerrarSesion(nclicks):
     global estadoAplicacion
     if estadoAplicacion == EJECCUCION:
         guardarInfUsuario()
         estadoAplicacion = HOME
+
         return layoutHome
     else:
         raise PreventUpdate
@@ -697,8 +849,9 @@ def avanzarPregunta(nclicks, r):
     Output(LAYOUT, "children"),
     Input(BOTON_TERMINAR_REGISTRO, 'n_clicks'),
     State(RESPUESTA, 'value'),
+    State(GLOBAL, 'nclicks')
 )
-def AcabarRegistro(nclicks, r):
+def EndRegistro(nclicks, r, n2):
     if nclicks is None:
         raise PreventUpdate
     global UsuarioAplicacion
@@ -711,7 +864,6 @@ def AcabarRegistro(nclicks, r):
                 UsuarioAplicacion.gltInitResult += 2
             else:
                 UsuarioAplicacion.gltInitResult += 1
-    print(UsuarioAplicacion.gltInitResult)
     UsuarioAplicacion.gltInitResult = UsuarioAplicacion.gltInitResult
     global tipoGraficas
     if UsuarioAplicacion.gltInitResult < 5:
@@ -722,8 +874,15 @@ def AcabarRegistro(nclicks, r):
         tipoGraficas = "Cajas"
     else:
         tipoGraficas = "Funnel"
+
+    acabarRegistro()
     global estadoAplicacion
     estadoAplicacion = EJECCUCION
+    global nclicks_inicio
+    nclicks_inicio = n2
+
+    global TinicioSesion
+    TinicioSesion = time.time()
     return layoutEjeccucion
 
 # @app.callback(
