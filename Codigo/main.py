@@ -564,18 +564,24 @@ def update_activity_chart(grupo: str, usuario: str) -> html.Div():
 
     fig1.update_layout(
         title="Different events",
+        xaxis_title = "",
         yaxis_title="Number of events",
-        legend_title="Puzzles"
+        legend_title="Puzzles",
+        xaxis={'showticklabels': False}
     )
     fig2.update_layout(
         title="Total events",
+        xaxis_title = "",
         yaxis_title="Number of events",
-        legend_title="Puzzles"
+        legend_title="Puzzles",
+        xaxis={'showticklabels': False}
     )
     fig3.update_layout(
         title="Active time",
+        xaxis_title = "",
         yaxis_title="Time (seconds)",
-        legend_title="Puzzles"
+        legend_title="Puzzles",
+        xaxis={'showticklabels': False}
     )
 
     if not navegacionAnidada:
@@ -694,31 +700,36 @@ def update_difficulty_chart(grupo: str, nclicks: int) -> html.Div():
         title="Active time",
         xaxis_title="",
         yaxis_title="",
-        legend_title="Puzzles"
+        legend_title="Puzzles",
+        xaxis={'showticklabels': False}
     )
     fig2.update_layout(
         title="Number of actions",
         xaxis_title="",
         yaxis_title="",
-        legend_title="Puzzles"
+        legend_title="Puzzles",
+        xaxis={'showticklabels': False}
     )
     fig3.update_layout(
         title="Percentage incorrect",
         xaxis_title="",
         yaxis_title="",
-        legend_title="Puzzles"
+        legend_title="Puzzles",
+        xaxis={'showticklabels': False}
     )
     fig4.update_layout(
         title="Percentage abandoned",
         xaxis_title="",
         yaxis_title="",
-        legend_title="Puzzles"
+        legend_title="Puzzles",
+        xaxis={'showticklabels': False}
     )
     fig5.update_layout(
         title="General difficulty meassure",
         xaxis_title="",
         yaxis_title="",
-        legend_title="Puzzles"
+        legend_title="Puzzles",
+        xaxis={'showticklabels': False}
     )
 
     if nclicks % 2 == 0:
@@ -927,6 +938,7 @@ def update_bar_chart(grupo: str, usuario: str, nclicks: int) -> html.Div():
 
         xValues = usuarios_grupo.iloc[:]["sequence"]
         yValues = [0] * len(xValues)
+
         for i in range(0, len(yValues)):
             idTask = usuarios_grupo.iloc[i]["task_id"]
             dif = dificultad.loc[dificultad['task_id'] == idTask]
@@ -943,10 +955,12 @@ def update_bar_chart(grupo: str, usuario: str, nclicks: int) -> html.Div():
                 if colorPuzzles.iloc[i] != "completed":
                     colorPuzzles.iloc[i] = "started"
 
+        tam = [5] * len(xValues)
+
         if tipoGraficas == 0:
             fig = px.bar(usuarios_grupo, x="sequence", y=yValues, color=colorPuzzles, hover_data=["task_id"])
         else:
-            fig = px.scatter(usuarios_grupo, x="sequence", y=yValues, color=colorPuzzles, hover_data=["task_id"])
+            fig = px.scatter(usuarios_grupo, x="sequence", y=yValues, color=colorPuzzles, hover_data=["task_id"], size = tam)
 
         fig.update_layout(
             title="Secuencia entre puzzles",
