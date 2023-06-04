@@ -10,6 +10,7 @@ from sklearn.metrics import (
 )
 import pickle
 
+
 np.random.seed(1000)
 n = 100000
 
@@ -18,15 +19,15 @@ n = 100000
 print("INICIO GENERACIÓN DATOS")
 
 # Tiempo total en la aplicación
-tiempoTotal = np.random.normal(3000, 1800, n)
+tiempoTotal = np.random.normal(3000, 500, n)
 # Tiempo máximo seguido en el que el usuario ha estado inactivo
-tiempoInactividadMaximo = np.random.normal(25, 20, n)
+tiempoInactividadMaximo = np.random.normal(25, 10, n)
 # Número de clicks por minuto promedio
-nclicks_min = np.random.normal(15, 10, n)
+nclicks_min = np.random.normal(15, 4, n)
 # Cambios de sección por minuto promedio
 cambiosSeccion_min = np.random.lognormal(0, 0.5, n)
-# Resultado del test original
-scoreInicial = np.around(np.random.normal(5, 2, n))
+# Resultado del test 
+scoreInicial = np.around(np.random.normal(5, 1.4, n))
 # Edad del usuario
 edad = np.random.normal(40, 10, n)
 

@@ -9,12 +9,6 @@ from dash_extensions.enrich import DashProxy, MultiplexerTransform
 from dash.dependencies import Input, Output, State
 from usuario import Role
 from usuario import Usuario
-from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import (
-    accuracy_score,
-    confusion_matrix,
-    f1_score,
-)
 import time
 import os
 import pickle
@@ -584,7 +578,7 @@ def update_activity_chart(grupo: str, usuario: str) -> html.Div():
         legend_title="Puzzles"
     )
 
-    if contenidoSimplificado:
+    if not navegacionAnidada:
         return html.Div(
             id=BAR_CHART,
             children = [
@@ -2751,7 +2745,7 @@ def lSeccion1() -> html.Div:
     if nGraficasSeccion == 1:
         return html.Div(
             children=[
-                html.H1("GRAFICAS"),
+                html.H1("Dashboard"),
                 html.Hr(),
                 html.Div(
                     className="contenedor-dropdown",
@@ -2777,7 +2771,7 @@ def lSeccion1() -> html.Div:
     elif nGraficasSeccion == 4:
         return html.Div(
             children=[
-                html.H1("GRAFICAS"),
+                html.H1("Dashboard"),
                 html.Hr(),
                 html.Div(
                     className="contenedor-dropdown",
@@ -2875,7 +2869,7 @@ def lSeccion1() -> html.Div:
     else:
         return html.Div(
             children=[
-                html.H1("GRAFICAS"),
+                html.H1("Dashboard"),
                 html.Hr(),
                 html.Div(
                     className="contenedor-dropdown",
@@ -3073,7 +3067,7 @@ def lSeccion1() -> html.Div:
 def lSeccion2() -> html.Div:
     return html.Div(
         children=[
-            html.H1("GRAFICAS"),
+            html.H1("Dashboard"),
             html.Hr(),
             html.Div(
                 children=[
@@ -3096,7 +3090,7 @@ def lSeccion2() -> html.Div:
 def lSeccion3() -> html.Div:
     return html.Div(
         children=[
-            html.H1("GRAFICAS"),
+            html.H1("Dashboard"),
             html.Hr(),
             html.Div(
                 className="contenedor-dropdown",
@@ -3122,11 +3116,10 @@ def lSeccion3() -> html.Div:
 
 # Modal ayuda
 def contenidoModal():
-    return "No añadida aún"
+    return "Seleccione un grupo y un usuario dentro de ese grupo para observar su progreso.\n\n La gráfica contiene 4 barras. Estas barras representarán respectivamente el número de puzzles comenzados por el alumno, el número de puzzles en los que el alumnos ha creado al menos una figura, el número de puzzles entregados y el número de puzzles completados."
 
 def comentariosAyuda():
     global addAyuda
-    print("AINT NO WAY")
     if addAyuda:
         return html.Div([
             html.Div(
@@ -3219,7 +3212,7 @@ def layoutEjecucion():
                                     html.H1(),
                                     html.H1(),
                                     dbc.Button('Funnel', id=BOTON_SECCION_1),
-                                    dbc.Button('Sequence within puzzles', id=BOTON_SECCION_2),
+                                    dbc.Button('Sequence between puzzles', id=BOTON_SECCION_2),
                                     dbc.Button('Levels of activity', id=BOTON_SECCION_3),
                                     dbc.Button('Levels of difficulty', id=BOTON_SECCION_4),
                                 ], gap='3'),
@@ -3345,6 +3338,15 @@ def iniciarSesion(nombre):
             infoEntrenamiento[1] = UsuarioAplicacion.gltInitResult
             infoEntrenamiento[2:10] = np.mean(UltimasSesiones[0:sesionesValidas, :], axis=0)
 
+            infoEntrenamiento[2] = 1200
+            infoEntrenamiento[3] = 120
+            infoEntrenamiento[4] = 4
+            infoEntrenamiento[5] = 0.1
+            infoEntrenamiento[6] = 0.8
+            infoEntrenamiento[7] = 0.05
+            infoEntrenamiento[8] = 0.1
+            infoEntrenamiento[9] = 0.05
+
 
             path = "modelos/" + "ModeloCuadrosAyuda.txt"
             file = open(path, "rb")
@@ -3417,6 +3419,12 @@ def iniciarSesion(nombre):
             print("Simplificar contenido")
             print(contenidoSimplificado)
             print("")
+
+            # nGraficasSeccion = 1
+            # contenidoSimplificado = True
+            # addAyuda = False
+            # navegacionAnidada = True
+            # tipoGraficas = 0
 
             return True
 
@@ -3605,15 +3613,30 @@ def EndRegistro(nclicks, r):
             else:
                 UsuarioAplicacion.gltInitResult += 1
     UsuarioAplicacion.gltInitResult = UsuarioAplicacion.gltInitResult
+
+    UsuarioAplicacion.gltInitResult = 9
+    print(UsuarioAplicacion.gltInitResult)
+
     global tipoGraficas
+    global contenidoSimplificado
+    contenidoSimplificado = False
+    global navegacionAnidada
+    navegacionAnidada = False
+    global nGraficasSeccion
+    nGraficasSeccion = 1
+
     if UsuarioAplicacion.gltInitResult < 5:
         tipoGraficas = 0
+        contenidoSimplificado = True
     elif UsuarioAplicacion.gltInitResult < 7:
         tipoGraficas = 1
     elif UsuarioAplicacion.gltInitResult < 9:
         tipoGraficas = 1
+        nGraficasSeccion = 4
     else:
         tipoGraficas = 2
+        nGraficasSeccion = 4
+        navegacionAnidada = True
 
     global addAyuda
     addAyuda = True

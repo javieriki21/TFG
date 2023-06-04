@@ -1,4 +1,3 @@
-import numpy as np
 class Role:
     PROFESOR = 0
     ESTUDIANTE = 1
