@@ -3434,7 +3434,7 @@ def iniciarSesion(nombre):
             print(contenidoSimplificado)
             print("")
 
-            # nGraficasSeccion = 1
+            # nGraficasSeccion = 4
             # contenidoSimplificado = True
             # addAyuda = False
             # navegacionAnidada = True
